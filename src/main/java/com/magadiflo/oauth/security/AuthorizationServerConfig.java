@@ -24,14 +24,26 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		this.authenticationManager = authenticationManager;
 	}
 
+	/**
+	 * Estos dos endpoints del método de abajo, está protegido por autenticación via Http Basic
+	 * usando las credenciales del cliente:
+	 * Header Authorization Basic: client id: client secret
+	 * */
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-		super.configure(security);
+		security.tokenKeyAccess("permitAll()")//tokenKeyAccess, es el endpoint para generar el token, para autenticarnos con la ruta POST: /oauth/token
+			.checkTokenAccess("isAuthenticated()"); //isAuthenticated(), Método de springSecurity que valida que el cliente esté autentcado
 	}
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-		super.configure(clients);
+		clients.inMemory()
+			.withClient("frontEndApp")
+			.secret(this.passwordEncoder.encode("12345"))
+			.scopes("read", "write")
+			.authorizedGrantTypes("password", "refresh_token")
+			.accessTokenValiditySeconds(3600) //1h
+			.refreshTokenValiditySeconds(3600); //1h
 	}
 
 	/**
