@@ -32,8 +32,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	//Necesitamos registrarlo en el contenedor de Spring porque más adelante se usará en la configuración del servidor de autorización
 	@Bean
-	public PasswordEncoder passwordEncoder() {
+	public static PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 }
+/**
+ * NOTA: 
+ * Para evitar un posible error en las ultimas versiones de spring boot 2.6.0 en adelante:
+ * 		"BeanCurrentlyInCreationException: Error creating bean with name 'springSecurityConfig': 
+ * 		Requested bean is currently in creation: Is there an unresolvable circular reference"
+ * Es que definimos el método passwordEncoder() como un método estático
+ */
