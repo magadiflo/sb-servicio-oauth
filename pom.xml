@@ -42,6 +42,33 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.security.oauth</groupId>
+			<artifactId>spring-security-oauth2</artifactId>
+			<version>2.3.8.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-jwt</artifactId>
+			<version>1.1.1.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.magadiflo.usuarios.commons</groupId>
+			<artifactId>sb-servicio-usuarios-commons</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<!-- Excluimos la dependencia de Spring Data JPA ya que el servicio usuario-commons lo tiene,
+			entonces para evitar que nos configure, lo excluimos desde este mismo xml. 
+			Recordar que otra forma sería excluyéndolo desde la misma clase principal de Spring Boot,
+			tal como lo hicimos en el servicio items con la siguiente anotación:
+			@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class}) -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-data-jpa</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
