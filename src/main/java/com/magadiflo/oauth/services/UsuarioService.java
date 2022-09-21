@@ -17,7 +17,7 @@ import com.magadiflo.commons.usuarios.models.entity.Usuario;
 import com.magadiflo.oauth.clients.UsuarioFeignClient;
 
 @Service
-public class UsuarioService implements UserDetailsService {
+public class UsuarioService implements IUsuarioService, UserDetailsService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UsuarioService.class);
 	private final UsuarioFeignClient client;
@@ -28,7 +28,7 @@ public class UsuarioService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Usuario usuario = this.client.findByUsername(username);
+		Usuario usuario = this.findByUsername(username);
 		if (usuario == null) {
 			LOG.error("Error en el login, no existe el usuario {} en el sistema", username);
 			throw new UsernameNotFoundException(
@@ -40,6 +40,11 @@ public class UsuarioService implements UserDetailsService {
 		LOG.info("Usuario autenticado: {}", username);
 		return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true,
 				authorities);
+	}
+
+	@Override
+	public Usuario findByUsername(String username) {
+		return this.client.findByUsername(username);
 	}
 
 }
