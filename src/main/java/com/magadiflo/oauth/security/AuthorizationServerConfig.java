@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+import com.magadiflo.oauth.services.IUsuarioService;
+
 @RefreshScope
 @Configuration
 @EnableAuthorizationServer
@@ -26,12 +28,15 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
 	private final InfoAdicionalToken infoAdicionalToken;
+	private final IUsuarioService usuarioService;
 	
-	public AuthorizationServerConfig(Environment env, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, InfoAdicionalToken infoAdicionalToken) {
+	public AuthorizationServerConfig(Environment env, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, 
+			InfoAdicionalToken infoAdicionalToken, IUsuarioService usuarioService) {
 		this.env = env;
 		this.passwordEncoder = passwordEncoder;
 		this.authenticationManager = authenticationManager;
 		this.infoAdicionalToken = infoAdicionalToken;
+		this.usuarioService = usuarioService;
 	}
 
 	/**
@@ -70,7 +75,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		endpoints.authenticationManager(this.authenticationManager)
 			.tokenStore(this.tokenStore())
 			.accessTokenConverter(this.accessTokenConverter())
-			.tokenEnhancer(tokenEnhancerChain);
+			.tokenEnhancer(tokenEnhancerChain)
+			.userDetailsService(this.usuarioService);
 	}
 
 	@Bean

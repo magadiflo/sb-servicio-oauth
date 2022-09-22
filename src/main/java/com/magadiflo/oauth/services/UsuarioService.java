@@ -17,7 +17,7 @@ import com.magadiflo.commons.usuarios.models.entity.Usuario;
 import com.magadiflo.oauth.clients.UsuarioFeignClient;
 
 @Service
-public class UsuarioService implements IUsuarioService, UserDetailsService {
+public class UsuarioService implements IUsuarioService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UsuarioService.class);
 	private final UsuarioFeignClient client;
