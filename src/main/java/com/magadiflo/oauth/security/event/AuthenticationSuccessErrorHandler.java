@@ -9,10 +9,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 
+import com.magadiflo.oauth.services.IUsuarioService;
+
 @Component // Está siendo inyectada en el SpringSecurityConfig (vía constructor y usando la interfaz AuthenticationEventPublisher)
 public class AuthenticationSuccessErrorHandler implements AuthenticationEventPublisher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AuthenticationSuccessErrorHandler.class);
+	private final IUsuarioService usuarioService;
+	
+	public AuthenticationSuccessErrorHandler(IUsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
+	}
 
 	@Override
 	public void publishAuthenticationSuccess(Authentication authentication) {
