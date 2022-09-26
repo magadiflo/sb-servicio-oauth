@@ -2,6 +2,7 @@ package com.magadiflo.oauth.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -13,14 +14,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private final UserDetailsService usuarioService;
+	
+	private final AuthenticationEventPublisher authenticationEventPublisher;
 
-	public SpringSecurityConfig(UserDetailsService usuarioService) {
+	public SpringSecurityConfig(UserDetailsService usuarioService, AuthenticationEventPublisher authenticationEventPublisher) {
 		this.usuarioService = usuarioService;
+		this.authenticationEventPublisher = authenticationEventPublisher;
 	}
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(this.usuarioService).passwordEncoder(this.passwordEncoder());
+		auth.userDetailsService(this.usuarioService).passwordEncoder(passwordEncoder())
+			.and()
+			.authenticationEventPublisher(this.authenticationEventPublisher);
 	}
 
 	//Necesitamos registrarlo en el contenedor de Spring porque más adelante se usará en la configuración del servidor de autorización
