@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import com.magadiflo.commons.usuarios.models.entity.Usuario;
 import com.magadiflo.oauth.clients.UsuarioFeignClient;
 
+import feign.FeignException;
+
 @Service
 public class UsuarioService implements IUsuarioService {
 
@@ -27,18 +29,19 @@ public class UsuarioService implements IUsuarioService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Usuario usuario = this.findByUsername(username);
-		if (usuario == null) {
+		try {
+			Usuario usuario = this.findByUsername(username);
+			List<GrantedAuthority> authorities = usuario.getRoles().stream()
+					.map(role -> new SimpleGrantedAuthority(role.getNombre()))
+					.peek(authority -> LOG.info("Role: {}", authority.getAuthority())).collect(Collectors.toList());
+			LOG.info("Usuario autenticado: {}", username);
+			return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true,
+					authorities);			
+		} catch (FeignException e) {
 			LOG.error("Error en el login, no existe el usuario {} en el sistema", username);
 			throw new UsernameNotFoundException(
 					String.format("Error en el login, no existe el usuario %s en el sistema", username));
 		}
-		List<GrantedAuthority> authorities = usuario.getRoles().stream()
-				.map(role -> new SimpleGrantedAuthority(role.getNombre()))
-				.peek(authority -> LOG.info("Role: {}", authority.getAuthority())).collect(Collectors.toList());
-		LOG.info("Usuario autenticado: {}", username);
-		return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true,
-				authorities);
 	}
 
 	@Override
