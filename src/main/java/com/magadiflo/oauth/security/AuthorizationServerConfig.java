@@ -1,6 +1,7 @@
 package com.magadiflo.oauth.security;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
@@ -87,7 +88,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter();
-		tokenConverter.setSigningKey(this.env.getProperty("config.security.oauth.jwt.key"));		
+		tokenConverter.setSigningKey(Base64.getEncoder().encodeToString(this.env.getProperty("config.security.oauth.jwt.key").getBytes()));
 		return tokenConverter;
 	}
 
