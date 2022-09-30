@@ -12,14 +12,18 @@ import org.springframework.stereotype.Component;
 import com.magadiflo.commons.usuarios.models.entity.Usuario;
 import com.magadiflo.oauth.services.IUsuarioService;
 
+import brave.Tracer;
+
 @Component // Está siendo inyectada en el SpringSecurityConfig (vía constructor y usando la interfaz AuthenticationEventPublisher)
 public class AuthenticationSuccessErrorHandler implements AuthenticationEventPublisher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AuthenticationSuccessErrorHandler.class);
 	private final IUsuarioService usuarioService;
+	private final Tracer tracer;
 	
-	public AuthenticationSuccessErrorHandler(IUsuarioService usuarioService) {
+	public AuthenticationSuccessErrorHandler(IUsuarioService usuarioService, Tracer tracer) {
 		this.usuarioService = usuarioService;
+		this.tracer = tracer;
 	}
 
 	@Override
@@ -46,6 +50,11 @@ public class AuthenticationSuccessErrorHandler implements AuthenticationEventPub
 		LOG.error("Error en el login: {}", exception.getMessage());
 		
 		try {
+			
+			StringBuilder errors = new StringBuilder();
+			errors.append("Error en el login: " + exception.getMessage());
+			
+			
 			Usuario usuario = this.usuarioService.findByUsername(authentication.getName());
 			if(usuario.getIntentos() == null) {
 				usuario.setIntentos(0);
@@ -55,13 +64,20 @@ public class AuthenticationSuccessErrorHandler implements AuthenticationEventPub
 			usuario.setIntentos(usuario.getIntentos() + 1);
 			LOG.info("Valor después de actualizar 'intentos': {}", usuario.getIntentos());
 			
+			errors.append(", Intentos del login: " + usuario.getIntentos());
+			
 			if(usuario.getIntentos() >= 3) {
+				
+				errors.append(String.format(", El usuario %s deshabilitado por máximo de intentos", authentication.getName()));
+				
 				LOG.error("El usuario {} deshabilitado por máximo de intentos", authentication.getName());
 				usuario.setEnabled(false);//Deshabilitamos al usuario				
 			}
 			
 			//Actualizamos el usuario en la BD
 			this.usuarioService.update(usuario, usuario.getId());
+			
+			this.tracer.currentSpan().tag("error.mensaje", errors.toString());
 		}catch (Exception e) {
 			LOG.error("El usuario {} no existe en el sistema", authentication.getName());
 		}

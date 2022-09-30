@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.magadiflo.commons.usuarios.models.entity.Usuario;
 import com.magadiflo.oauth.clients.UsuarioFeignClient;
 
+import brave.Tracer;
 import feign.FeignException;
 
 @Service
@@ -22,9 +23,11 @@ public class UsuarioService implements IUsuarioService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(UsuarioService.class);
 	private final UsuarioFeignClient client;
+	private final Tracer tracer;
 
-	public UsuarioService(UsuarioFeignClient client) {
+	public UsuarioService(UsuarioFeignClient client, Tracer tracer) {
 		this.client = client;
+		this.tracer = tracer;
 	}
 
 	@Override
@@ -38,7 +41,11 @@ public class UsuarioService implements IUsuarioService {
 			return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true,
 					authorities);			
 		} catch (FeignException e) {
-			LOG.error("Error en el login, no existe el usuario {} en el sistema", username);
+			String error = "Error en el login, no existe el usuario " + username + " en el sistema";
+			
+			LOG.error(error);
+			this.tracer.currentSpan().tag("error.mensaje", error + ": " + e.getMessage());
+			
 			throw new UsernameNotFoundException(
 					String.format("Error en el login, no existe el usuario %s en el sistema", username));
 		}
